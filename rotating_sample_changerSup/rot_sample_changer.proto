@@ -1,7 +1,10 @@
-getIDN {
-    out "*IDN?";
-    in "%\$1[^\r\n]";
-    ExtraInput = Ignore;
+Terminator = '\r';
+ReplyTimeout = 2000;
+
+getID {
+    out "id";
+    in "%/(.{0,39})/";
+	ExtraInput = Ignore;
 }
 
 cmd {
