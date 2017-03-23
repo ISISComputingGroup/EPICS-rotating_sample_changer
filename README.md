@@ -1,0 +1,1 @@
+This is the support module for the rotating sample changer currently on HRPD, POLARIS and GEM.
