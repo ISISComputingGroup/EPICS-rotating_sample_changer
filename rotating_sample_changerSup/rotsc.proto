@@ -12,6 +12,11 @@ getStat {
 	in "%16s %(\$1\$2)3s %(\$1\$3)02d %(\$1\$4)02d";
 }
 
+getPosition {
+    out "po";
+	in "Position = %02d";
+}
+
 getVR {
     out "vr%(\$1\$2)#04i";
 	in "%(\$1\$3){+|-} VR %*i = %i hx %*x";
@@ -28,10 +33,12 @@ moveWithLower {
 	out "ma%#02i";
 	in "ok";
 	@mismatch {in "rf-%(\$1)i";}
+	@init {getPosition;}
 }
 
 moveNoLower {
 	out "mn%#02i";
 	in "ok";
 	@mismatch {in "rf-%(\$1)i";}
+	@init {getPosition;}
 }
