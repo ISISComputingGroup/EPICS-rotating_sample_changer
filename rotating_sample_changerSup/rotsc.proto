@@ -9,12 +9,13 @@ getID {
 
 getStat {
     out "st";
-	in "%16s %(\$1\$2)3s %(\$1\$3)02d %(\$1\$4)02d";
+	in "%16s %(\$1\$2)3c %(\$1\$3)2d %(\$1\$4)2d";
+	ExtraInput = Ignore;
 }
 
 getPosition {
     out "po";
-	in "Position = %02d";
+	in "Position = %2d";
 }
 
 getVR {
