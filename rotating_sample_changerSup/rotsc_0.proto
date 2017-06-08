@@ -1,0 +1,34 @@
+#This is the protocol for the sample changer on POLARIS
+
+Terminator = '\r\n';
+ReplyTimeout = 2000;
+
+getID {
+    out "id";
+    in "%/(.{0,39})/";
+	ExtraInput = Ignore;
+}
+
+getStat {
+    out "st";
+	in "%6s%(\$1\$2)2c%(\$1\$3)1d %(\$1\$4)2d";
+}
+
+getPosition {
+    out "po";
+	in "Position = %2d";
+}
+
+sendCommand {
+	out "\$1";
+}
+
+moveWithLower {
+	out "ma%#02i";
+	@init {getPosition;}
+}
+
+moveNoLower {
+	out "mn%#02i";
+	@init {getPosition;}
+}
