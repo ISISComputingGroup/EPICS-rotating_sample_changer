@@ -25,7 +25,7 @@ sendCommand {
 
 moveWithLower {
 	out "ma%#02u";
-	#@init {getPosition;}
+	@init {getPosition;}
 }
 
 moveNoLower {
