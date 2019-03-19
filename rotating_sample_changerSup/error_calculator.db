@@ -1,3 +1,4 @@
+# Populated by the RAW_STATUS scan loop
 record(ai, "$(P)$(ERR)_NUMBER")
 {
 	field(DESC, "The enum of the device's error")
