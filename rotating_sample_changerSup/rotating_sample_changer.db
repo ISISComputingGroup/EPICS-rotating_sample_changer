@@ -31,6 +31,7 @@ record(stringin, "$(P)ID")
 record(stringin, "$(P)RAW_STATUS")
 {
     field(SCAN, "1 second")
+    field(PHAS, "1")
     field(DTYP, "stream")
     field(INP,  "@rotsc_$(VERSION).proto getStat($(P),RAW_MTR_STAT,$(ERR)_NUMBER,POSN) $(PORT)")
     field(FLNK, "$(P)STAT_FAN")
@@ -39,12 +40,44 @@ record(stringin, "$(P)RAW_STATUS")
     field(SDIS, "$(P)DISABLE")
 }
 
-# Populated by the RAW_STATUS scan loop
-record(stringin, "$(P)RAW_MTR_STAT")
+record(fanout, "$(P)STAT_FAN")
 {
+    field(LNK1, "$(P)CALC_MTR_1_ENB.PROC")
+    field(LNK2, "$(P)CALC_MTR_0_ENB.PROC")
+    field(LNK3, "$(P)CALC_ACTUATOR_ARM_POSN.PROC")
+    field(LNK4, "$(P)CALC_CAR_AT_IDX.PROC")
+    field(LNK5, "$(P)CALC_CAR_AT_POS_1.PROC")
+    field(LNK6, "$(P)STAT_FAN_01.PROC")
 }
 
-# Populated by the RAW_STATUS scan loop
+record(fanout, "$(P)STAT_FAN_01")
+{
+    field(LNK1, "$(P)CALC_SAMPLE_ARM_UP.PROC")
+    field(LNK2, "$(P)CALC_SAMPLE_ARM_DOWN.PROC")
+    field(LNK3, "$(P)CALC_MTR_1_DIRECTION.PROC")
+    field(LNK4, "$(P)CALC_MTR_1_STATUS.PROC")
+    field(LNK5, "$(P)CALC_MTR_0_STATUS.PROC")
+    field(LNK6, "$(P)STAT_FAN_02.PROC")
+}
+
+record(fanout, "$(P)STAT_FAN_02")
+{
+    field(LNK1, "$(P)CALC_MTR_0_DIRECTION.PROC")
+    field(LNK2, "$(P)POSN.PROC")
+    field(LNK3, "$(P)$(ERR)_NUMBER.PROC")
+}
+
+record(stringin, "$(P)RAW_MTR_STAT")
+{
+    field(FLNK, "$(P)MTR_STAT_FAN.PROC")
+}
+
+record(fanout, "$(P)MTR_STAT_FAN")
+{
+    field(LNK1, "$(P)CALC_MTR_0_ACTIVE.PROC")
+    field(LNK2, "$(P)CALC_MTR_1_ACTIVE.PROC")
+}
+
 record(ai, "$(P)POSN")
 {
     field(DESC, "The position of the rotation")
@@ -66,8 +99,8 @@ record(calc, "$(P)CALC_STATUS_OFFSET")
 record(scalcout, "$(P)CALC_ACTUATOR_ARM_POSN")
 {
     field(CALC, "AA[0+BB,0+BB]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
-    field(INBB, "$(P)CALC_STATUS_OFFSET CP")
+    field(INAA, "$(P)RAW_STATUS PP MS")
+    field(INBB, "$(P)CALC_STATUS_OFFSET")
     field(OUT, "$(P)ACTUATOR_ARM_POSITION PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -84,8 +117,8 @@ record(bo, "$(P)ACTUATOR_ARM_POSITION")
 record(scalcout, "$(P)CALC_CAR_AT_IDX")
 {
     field(CALC, "AA[2+BB,2+BB]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
-    field(INBB, "$(P)CALC_STATUS_OFFSET CP")
+    field(INAA, "$(P)RAW_STATUS PP MS")
+    field(INBB, "$(P)CALC_STATUS_OFFSET")
     field(OUT, "$(P)CAROUSEL_AT_IDX PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -101,8 +134,8 @@ record(bo, "$(P)CAROUSEL_AT_IDX")
 record(scalcout, "$(P)CALC_CAR_AT_POS_1")
 {
     field(CALC, "AA[3+BB,3+BB]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
-    field(INBB, "$(P)CALC_STATUS_OFFSET CP")
+    field(INAA, "$(P)RAW_STATUS PP MS")
+    field(INBB, "$(P)CALC_STATUS_OFFSET")
     field(OUT, "$(P)CAROUSEL_AT_POS_1 PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -118,8 +151,8 @@ record(bo, "$(P)CAROUSEL_AT_POS_1")
 record(scalcout, "$(P)CALC_SAMPLE_ARM_UP")
 {
     field(CALC, "AA[4+BB,4+BB]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
-    field(INBB, "$(P)CALC_STATUS_OFFSET CP")
+    field(INAA, "$(P)RAW_STATUS PP MS")
+    field(INBB, "$(P)CALC_STATUS_OFFSET")
     field(OUT, "$(P)SAMPLE_ARM_UP PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -134,8 +167,8 @@ record(bo, "$(P)SAMPLE_ARM_UP")
 record(scalcout, "$(P)CALC_SAMPLE_ARM_DOWN")
 {
     field(CALC, "AA[5+BB,5+BB]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
-    field(INBB, "$(P)CALC_STATUS_OFFSET CP")
+    field(INAA, "$(P)RAW_STATUS PP MS")
+    field(INBB, "$(P)CALC_STATUS_OFFSET")
     field(OUT, "$(P)SAMPLE_ARM_DOWN PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -151,7 +184,7 @@ record(bo, "$(P)SAMPLE_ARM_DOWN")
 record(scalcout, "$(P)CALC_MTR_1_ACTIVE")
 {
     field(CALC, "AA[0,0]")
-    field(INAA, "$(P)RAW_MTR_STAT CP MS")
+    field(INAA, "$(P)RAW_MTR_STAT PP MS")
     field(OUT, "$(P)MOTOR_1_ACTIVE PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -168,7 +201,7 @@ record(scalcout, "$(P)CALC_MTR_0_ACTIVE")
 {
     # HRPD version gives three motor status bits rather than two
     field(CALC, "AA[($(VERSION)+1),($(VERSION)+1)]")
-    field(INAA, "$(P)RAW_MTR_STAT CP MS")
+    field(INAA, "$(P)RAW_MTR_STAT PP MS")
     field(OUT, "$(P)MOTOR_0_ACTIVE PP MS")
     field(IVOA, "Don't drive outputs")
 }
@@ -298,31 +331,30 @@ record(ao, "$(P)POSN:SP")
     field(SDIS, "$(P)DISABLE")
 }
 
+
 record(ao, "$(P)POSN:SP:RAW")
 {
     field(DTYP, "stream")
-    field(DRVH, "20")
-    field(DRVL, "1")
+  field(DRVH, "20")
+  field(DRVL, "1")
+  field(OIF, "Full")
+    field(OMSL, "closed_loop")
+    field(DOL, "$(P)POSN:SP")
     field(OUT, "@rotsc_$(VERSION).proto moveWithLower($(P)$(CMD_ERR)_NUMBER) $(PORT)")
-    field(SIML, "$(P)SIM")
-    field(SIOL, "$(P)SIM:POSN:SP")
-    field(SDIS, "$(P)DISABLE")
 }
 
 record(calc, "$(P)CALC_MOVE_FINISHED")
 {
     field(DESC, "Has the device has finished moving")
-    field(INPA, "$(P)MOTOR_0_ACTIVE CP MS")
-    field(INPB, "$(P)MOTOR_1_ACTIVE CP MS")
-    field(INPC, "$(P)POSN CP MS")
-    field(INPD, "$(P)POSN:SP CP")
-    field(INPE, "$(P)POSN:SP.SEVR CP")
-    field(INPF, "$(P)SAMPLE_ARM_DOWN CP MS")
-    
-    # First condition: Both motors must be inactive
-    # Second condition: Either the sample position must equal the setpoint, or the setpoint must be in alarm (e.g. undefined just after an IOC restart)
-    # Third condition: The sample arm must be down
-    field(CALC, "(!A)&&(!B)&&(E>0||C=D)&&(F=1)")
+    field(SCAN, "Passive")
+    field(INPA, "$(P)MOTOR_0_ACTIVE CP")
+    field(INPB, "$(P)MOTOR_1_ACTIVE CP")
+    field(INPC, "$(P)SAMPLE_ARM_DOWN CP")
+    field(INPD, "$(P)POSN CP")
+    field(INPE, "$(P)POSN:SP CP")
+    field(INPF, "$(P)POSN:SP.SEVR CP")
+
+    field(CALC, "(!A)&&(!B)&&C&&(D=-1||D=E||E=1)")
     field(ASG, "READONLY")
     info(INTEREST, "MEDIUM")
 }
@@ -339,10 +371,10 @@ record(calc, "$(P)IS_INITIALISED")
 record(calcout, "$(P)CALC_STAT")
 {
     field(DESC, "Make text version of status")
-    field(INPA, "$(P)IS_INITIALISED CP MS")
-    field(INPB, "$(P)CALC_MOVE_FINISHED CP MS")
+    field(INPA, "$(P)IS_INITIALISED CP")
+    field(INPB, "$(P)CALC_MOVE_FINISHED CP")
     field(CALC, "(!A)?0:B?1:2")
-    field(OUT, "$(P)STAT PP MS")
+    field(OUT, "$(P)STAT PP")
 }
 
 record(mbbi, "$(P)STAT")
@@ -357,22 +389,16 @@ record(mbbi, "$(P)STAT")
     info(INTEREST, "MEDIUM")
 }
 
-record(ao, "$(P)SEQ:MAX_MOTION_BEGIN_DELAY")
-{
-    # Maximum time to wait for the motors to become active after sending a move request
-    field(VAL, "10")
+record(ao, "$(P)SEQ:MAX_MOTION_TIME") {
+    # Max time to wait for motion to stop after it started.
+    field(VAL, "600")
     field(PINI, "YES")
-    field(EGU, "s")
 }
 
-record(ao, "$(P)SEQ:MAX_MOTION_TIME")
-{
-    # Maximum time to wait for motors to become inactive after becoming active due to a move request.
-    # Should be at least 2*(arm up/down time) + (maximum number of positions * seconds to move one position)
-    # On Polaris, this is (2 * 60) + (20 * 10) = 320seconds so set this to 450 or so (to give a buffer for slightly slow moves)
-    field(VAL, "450")
+record(ao, "$(P)SEQ:MAX_MOTION_BEGIN_DELAY") {
+    # Max time between asking for a move to start, and the move starting.
+    field(VAL, "10")
     field(PINI, "YES")
-    field(EGU, "s")
 }
 
 ### SIMULATION RECORDS ###
@@ -393,8 +419,6 @@ record(ao, "$(P)SIM:POSN:SP")
 {
     field(SCAN, "Passive")
     field(DTYP, "Soft Channel")
-    field(VAL, "1")
-    field(PINI, "YES")
 }
 
 record(bo, "$(P)SIM:RETRIEVE_DROPPED")

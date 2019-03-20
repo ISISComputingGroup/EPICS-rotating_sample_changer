@@ -9,10 +9,11 @@ option +d;
 
 PV(unsigned int, setpoint, "{P}POSN:SP", Monitor);
 PV(unsigned int, setpoint_alarm, "{P}POSN:SP.SEVR", Monitor);
-PV(unsigned int, setpoint_raw, "{P}POSN:SP:RAW", NoMon);
+PV(unsigned int, setpoint_raw, "{P}POSN:SP:RAW", Monitor);
 PV(unsigned int, actual_position, "{P}POSN", Monitor);
 
 PV(unsigned int, initialized, "{P}IS_INITIALISED", Monitor);
+PV(unsigned int, reinitialize, "{P}INIT", NoMon);
 
 PV(unsigned int, motor0_active, "{P}MOTOR_0_ACTIVE", Monitor);
 PV(unsigned int, motor1_active, "{P}MOTOR_1_ACTIVE", Monitor);
@@ -33,11 +34,12 @@ ss rotsc
 {
   state uninitialized
   { 
-    /* Every minute, print a log message that the sample changer is still not initialized */
-    /* TODO: could we automatically initialize the changer here? What problems would that have? */
-    when(delay(60)) 
+    /* Every max_motion_time seconds, if the sample changer is not initialized, send the reinitialize command 
+       re-initialize is essentially just a home - moves to position 1 and then arm goes down */
+    when(delay(max_motion_time)) 
     {
-      errlogSevPrintf(errlogMajor, "%s: Sample changer is not initialized.\n", PROGRAM_NAME);
+      errlogSevPrintf(errlogMajor, "%s: Sample changer is not initialized. Reinitializing...\n", PROGRAM_NAME);
+      PVPUT(reinitialize, 1);
     } state uninitialized
   
     when (initialized)
@@ -48,11 +50,19 @@ ss rotsc
 
   state idle
   {
-    when(setpoint != actual_position && setpoint_alarm == 0) 
+    /* Normal case where setpoint changes. Dont send a move request if actual_position < 0 as this means the sample changer is uninitialized (probably
+       power cycled under us). In this case, trust that it is still in the correct position, until the setpoint changes again */
+    when(setpoint != actual_position && actual_position >= 0 && setpoint_alarm == 0) 
 	{
       errlogSevPrintf(errlogInfo, "%s: Starting move from actual_position = %d to target = %d.\n", PROGRAM_NAME, actual_position, setpoint);
       PVPUT(setpoint_raw, setpoint);
 	} state wait_for_motion_to_begin
+    
+    /* Catch case where sample changer power cycles underneath us. Wait for setpoint to change (setpoint != setpoint_raw) and then re-initialize. */
+    when(actual_position == -1 && setpoint != setpoint_raw) {
+      errlogSevPrintf(errlogMajor, "%s: Move requested but sample changer wasn't initialised. Re-initializing first before move.\n", PROGRAM_NAME, actual_position, setpoint);
+      PVPUT(reinitialize, 1);
+    } state uninitialized
   }
   
   state wait_for_motion_to_begin
@@ -69,7 +79,8 @@ ss rotsc
     /* Check if the sample changer has become uninitialized, if so log an error and go back to uninitialized state */
     when (!initialized)
     {
-      errlogSevPrintf(errlogMajor, "%s: Move requested while sample changer not initialized.\n", PROGRAM_NAME, error);
+      errlogSevPrintf(errlogMajor, "%s: Move requested while sample changer not initialized. Will attempt to reinitialize.\n", PROGRAM_NAME, error);
+      PVPUT(reinitialize, 1);
     } state uninitialized
     
     when(delay(max_motion_begin_delay))
