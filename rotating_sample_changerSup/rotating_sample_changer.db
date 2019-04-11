@@ -5,6 +5,7 @@ record(bo, "$(P)SIM")
     field(ZNAM, "NO")
     field(ONAM, "YES")
     field(VAL, "$(RECSIM=0)")
+    field(PINI, "YES")
 }
 
 record(bo, "$(P)DISABLE")
@@ -323,21 +324,11 @@ record(ao, "$(P)POSN:SP")
     field(DTYP, "Soft Channel")
     field(DESC, "Move to the position and lower the arm")
     field(SCAN, "Passive")
-    field(FLNK, "$(P)POSN:SP:_SEND_IF_CHANGED") #forward links to check if move is necessary
     info(INTEREST, "HIGH")
     field(EGU, "")
     field(SIML, "$(P)SIM")
     field(SIOL, "$(P)SIM:POSN:SP")
     field(SDIS, "$(P)DISABLE")
-}
-
-record(calcout, "$(P)POSN:SP:_SEND_IF_CHANGED")
-{
-    field(INPA, "$(P)POSN:SP")
-    field(INPB, "$(P)POSN")
-    field(CALC, "A!=B") # compares and prevents moving to position that it is already in.
-    field(OOPT, "When Non-zero")
-    field(OUT, "$(P)POSN:SP:RAW.PROC")
 }
 
 
@@ -358,7 +349,12 @@ record(calc, "$(P)CALC_MOVE_FINISHED")
     field(SCAN, "Passive")
     field(INPA, "$(P)MOTOR_0_ACTIVE CP")
     field(INPB, "$(P)MOTOR_1_ACTIVE CP")
-    field(CALC, "(!A)&&(!B)")
+    field(INPC, "$(P)SAMPLE_ARM_DOWN CP")
+    field(INPD, "$(P)POSN CP")
+    field(INPE, "$(P)POSN:SP CP")
+    field(INPF, "$(P)POSN:SP.SEVR CP")
+
+    field(CALC, "(!A)&&(!B)&&C&&(D=-1||D=E||E=1)")
     field(ASG, "READONLY")
     info(INTEREST, "MEDIUM")
 }
@@ -391,6 +387,18 @@ record(mbbi, "$(P)STAT")
     field(TWVL, "2")
     field(TWST, "Moving")
     info(INTEREST, "MEDIUM")
+}
+
+record(ao, "$(P)SEQ:MAX_MOTION_TIME") {
+    # Max time to wait for motion to stop after it started.
+    field(VAL, "600")
+    field(PINI, "YES")
+}
+
+record(ao, "$(P)SEQ:MAX_MOTION_BEGIN_DELAY") {
+    # Max time between asking for a move to start, and the move starting.
+    field(VAL, "10")
+    field(PINI, "YES")
 }
 
 ### SIMULATION RECORDS ###
