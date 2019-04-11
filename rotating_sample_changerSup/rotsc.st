@@ -60,7 +60,7 @@ ss rotsc
     
     /* Catch case where sample changer power cycles underneath us. Wait for setpoint to change (setpoint != setpoint_raw) and then re-initialize. */
     when(actual_position == -1 && setpoint != setpoint_raw) {
-      errlogSevPrintf(errlogMajor, "%s: Move requested but sample changer wasn't initialised. Re-initializing first before move.\n", PROGRAM_NAME, actual_position, setpoint);
+      errlogSevPrintf(errlogMajor, "%s: Move requested but sample changer wasn't initialised. Re-initializing first before move.\n", PROGRAM_NAME);
       PVPUT(reinitialize, 1);
     } state uninitialized
   }
@@ -79,7 +79,7 @@ ss rotsc
     /* Check if the sample changer has become uninitialized, if so log an error and go back to uninitialized state */
     when (!initialized)
     {
-      errlogSevPrintf(errlogMajor, "%s: Move requested while sample changer not initialized. Will attempt to reinitialize.\n", PROGRAM_NAME, error);
+      errlogSevPrintf(errlogMajor, "%s: Move requested while sample changer not initialized. Will attempt to reinitialize.\n", PROGRAM_NAME);
       PVPUT(reinitialize, 1);
     } state uninitialized
     
