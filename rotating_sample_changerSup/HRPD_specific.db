@@ -10,11 +10,11 @@ record(bi, "$(P)GET_VR:POLARITY")
 {
 	field(ZNAM, "+")
 	field(ONAM, "-")
+	field(FLNK, "$(P)CALC_GET_VR")
 }
 
 record(ai, "$(P)GET_VR_MAG")
 {
-    field(SCAN, "1 second")
 	field(DTYP, "stream")
 	field(INP, "@rotsc_1.proto getVR($(P),GET_VR:SP,GET_VR:POLARITY) $(PORT)")
 	field(FLNK, "$(P)GET_VR:POLARITY")
@@ -25,10 +25,11 @@ record(ai, "$(P)GET_VR_MAG")
 
 record(scalcout, "$(P)CALC_GET_VR")
 {
-    field(INAA, "$(P)GET_VR:POLARITY CP MS")
-    field(INBB, "$(P)GET_VR_MAG CP MS") 
+    field(INAA, "$(P)GET_VR:POLARITY PP MS")
+    field(INBB, "$(P)GET_VR_MAG PP MS") 
 	field(CALC, "AA+BB")
-	field(OUT, "$(P)GET_VR PP MS")
+	field(OUT, "$(P)GET_VR")
+	field(FLNK, "$(P)GET_VR")
 }
 
 record(ai, "$(P)GET_VR")
@@ -41,7 +42,7 @@ record(ai, "$(P)GET_VR")
 record(scalcout, "$(P)CALC_MTR_1_ENB")
 {
     field(CALC, "AA[0,0]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MTR_1_ENABLED PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -57,7 +58,7 @@ record(bo, "$(P)MTR_1_ENABLED")
 record(scalcout, "$(P)CALC_MTR_0_ENB")
 {
     field(CALC, "AA[1,1]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MTR_0_ENABLED PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -73,7 +74,7 @@ record(bo, "$(P)MTR_0_ENABLED")
 record(scalcout, "$(P)CALC_MTR_1_DIRECTION")
 {
     field(CALC, "AA[12,12]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MOTOR_1_DIRECTION PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -89,7 +90,7 @@ record(bo, "$(P)MOTOR_1_DIRECTION")
 record(scalcout, "$(P)CALC_MTR_1_STATUS")
 {
     field(CALC, "AA[13,13]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MOTOR_1_STATUS PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -105,7 +106,7 @@ record(bo, "$(P)MOTOR_1_STATUS")
 record(scalcout, "$(P)CALC_MTR_0_STATUS")
 {
     field(CALC, "AA[6,6]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MOTOR_0_STATUS PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -121,7 +122,7 @@ record(bo, "$(P)MOTOR_0_STATUS")
 record(scalcout, "$(P)CALC_MTR_0_DIRECTION")
 {
     field(CALC, "AA[15,15]")
-    field(INAA, "$(P)RAW_STATUS CP MS")
+    field(INAA, "$(P)RAW_STATUS PP MS")
     field(OUT, "$(P)MOTOR_0_DIRECTION PP MS")
 	field(IVOA, "Don't drive outputs")
 }
@@ -139,6 +140,7 @@ record(ao, "$(P)POSN:NO_LOWER:SP")
 	field(DTYP, "stream")
 	field(DESC, "Move to the given position")
 	field(OUT, "@rotsc_1.proto moveNoLower($(P)$(CMD_ERR)_NUMBER) $(PORT)")
+	field(FLNK, "$(P)$(CMD_ERR)_NUMBER.PROC")
 	info(INTEREST, "MEDIUM")
 	field(EGU, "")
     field(SIML, "$(P)SIM")
