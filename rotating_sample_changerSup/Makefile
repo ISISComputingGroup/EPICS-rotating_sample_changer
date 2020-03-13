@@ -16,7 +16,7 @@ DBD += rotsc.dbd
 
 LIBRARY_IOC = ROTSC
 
-ROTSC_LIBS += seqDev seq pv
+ROTSC_LIBS += seq pv
 ROTSC_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 ROTSC_SRCS += rotsc.st
