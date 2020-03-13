@@ -353,8 +353,9 @@ record(calc, "$(P)CALC_MOVE_FINISHED")
     field(INPD, "$(P)POSN CP")
     field(INPE, "$(P)POSN:SP CP")
     field(INPF, "$(P)POSN:SP.SEVR CP")
+    field(INPG, "$(P)ERR_NUMBER CP")
 
-    field(CALC, "(!A)&&(!B)&&C&&(D=-1||D=E||E=1)")
+    field(CALC, "(!A)&&(!B)&&C&&(D=-1||D=E||E=1)&&(G=0)")
     field(ASG, "READONLY")
     info(INTEREST, "MEDIUM")
 }
