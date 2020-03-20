@@ -7,6 +7,7 @@ option +d;
 %% #include "stdlib.h"
 %% #include "errlog.h"
 
+PV(unsigned int, last_setpoint, "{P}LAST_POSN:SP", Monitor);
 PV(unsigned int, setpoint, "{P}POSN:SP", Monitor);
 PV(unsigned int, setpoint_alarm, "{P}POSN:SP.SEVR", Monitor);
 PV(unsigned int, setpoint_raw, "{P}POSN:SP:RAW", Monitor);
@@ -19,13 +20,22 @@ PV(unsigned int, motor0_active, "{P}MOTOR_0_ACTIVE", Monitor);
 PV(unsigned int, motor1_active, "{P}MOTOR_1_ACTIVE", Monitor);
 
 PV(unsigned int, move_complete, "{P}CALC_MOVE_FINISHED", Monitor);
+PV(unsigned int, not_moving, "{P}CALC_NOT_MOVING", Monitor);
 
 PV(string, error, "{P}ERR_STRING.SVAL", Monitor);
+PV(unsigned int, error_number, "{P}ERR_NUMBER", Monitor);
 
 PV(double, max_motion_begin_delay, "{P}SEQ:MAX_MOTION_BEGIN_DELAY", Monitor);
 PV(double, max_motion_time, "{P}SEQ:MAX_MOTION_TIME", Monitor);
+PV(unsigned int, maximum_drop_retries, "{P}SEQ:MAX_RETRY", Monitor);
 
 PV(unsigned int, sample_arm_down, "{P}SAMPLE_ARM_DOWN", Monitor);
+PV(unsigned int, sample_arm_up, "{P}SAMPLE_ARM_UP", Monitor);
+
+PV(unsigned int, retrieve_sample, "{P}RETRIEVE_DROPPED", NoMon);
+PV(unsigned int, raise_arm, "{P}RAISE_ARM", Monitor);
+
+int sample_dropped_retries = 0;
 
 %% char* PROGRAM_NAME = "ROTSC Sequencer";
 
@@ -53,10 +63,15 @@ ss rotsc
     /* Normal case where setpoint changes. Dont send a move request if actual_position < 0 as this means the sample changer is uninitialized (probably
        power cycled under us). In this case, trust that it is still in the correct position, until the setpoint changes again */
     when(setpoint != actual_position && actual_position >= 0 && setpoint_alarm == 0) 
-	{
+    {
       errlogSevPrintf(errlogInfo, "%s: Starting move from actual_position = %d to target = %d.\n", PROGRAM_NAME, actual_position, setpoint);
+      if (setpoint_raw == -1) {
+        PVPUT(last_setpoint, 1);
+      } else {
+        PVPUT(last_setpoint, setpoint_raw);
+      }
       PVPUT(setpoint_raw, setpoint);
-	} state wait_for_motion_to_begin
+    } state wait_for_motion_to_begin
     
     /* Catch case where sample changer power cycles underneath us. Wait for setpoint to change (setpoint != setpoint_raw) and then re-initialize. */
     when(actual_position == -1 && setpoint != setpoint_raw) {
@@ -94,7 +109,15 @@ ss rotsc
     when(move_complete) 
     {
       errlogSevPrintf(errlogInfo, "%s: Target position (%d) reached.\n", PROGRAM_NAME, setpoint_raw);
+      sample_dropped_retries = 0;
     } state idle
+    
+    when(error_number == 7)
+    {
+      errlogSevPrintf(errlogInfo, "%s: Could not reach %d, sample dropped!\n", PROGRAM_NAME, setpoint_raw);
+      errlogSevPrintf(errlogInfo, "%s: Moving back to %d to retrieve sample.\n", PROGRAM_NAME, last_setpoint);
+      PVPUT(setpoint_raw, last_setpoint)
+    } state retrieve_dropped_sample
     
     when(delay(max_motion_time))
     {
@@ -106,4 +129,39 @@ ss rotsc
       PVPUT(setpoint_raw, setpoint);
     } state wait_for_motion_to_begin
   }
+  
+  state retrieve_dropped_sample
+  {
+    when(not_moving && actual_position == setpoint_raw)
+    {
+      errlogSevPrintf(errlogInfo, "%s: Retrieving dropped sample.\n", PROGRAM_NAME);
+      PVPUT(retrieve_sample, 1);
+    } state raise_sample_arm
+  }
+  
+  state raise_sample_arm
+  {
+    when(not_moving && !sample_arm_up)
+    {
+      errlogSevPrintf(errlogInfo, "%s: Assuming sample retrieved, raising arm.\n", PROGRAM_NAME, sample_arm_up);
+      PVPUT(raise_arm, 1);
+    } state wait_for_arm_raised
+  }
+  state wait_for_arm_raised
+  {
+    when(sample_arm_up)
+    {
+      errlogSevPrintf(errlogInfo, "%s: Sample arm raised, retrying move to %d.\n", PROGRAM_NAME, setpoint);
+      PVPUT(setpoint_raw, setpoint);
+      sample_dropped_retries++;
+    } state wait_for_motion_to_begin
+    
+    when(sample_dropped_retries == maximum_drop_retries)
+    {
+      errlogSevPrintf(errlogInfo, "%s: Sample could not be retrieved after %d retries.\n", PROGRAM_NAME, maximum_drop_retries);
+      PVPUTSTR(error, "Dropped sample could not be retrieved");
+      PVPUT(setpoint, actual_position);
+    } state idle
+  }
+  
 }
