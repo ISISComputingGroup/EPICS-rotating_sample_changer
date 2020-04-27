@@ -5,6 +5,7 @@ record(bo, "$(P)SIM")
     field(ZNAM, "NO")
     field(ONAM, "YES")
     field(VAL, "$(RECSIM=0)")
+    field(PINI, "YES")
 }
 
 record(bo, "$(P)DISABLE")
@@ -318,12 +319,23 @@ record(bo, "$(P)RETRIEVE_DROPPED")
     field(SDIS, "$(P)DISABLE")
 }
 
+record(ao, "$(P)LAST_POSN:SP")
+{
+    field(DTYP, "Soft Channel")
+    field(DESC, "Remember the last position requested to recover from errors")
+    field(SCAN, "Passive")
+    field(EGU, "")
+    field(VAL, "1")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:LAST_POSN:SP")
+    field(SDIS, "$(P)DISABLE")
+}
+
 record(ao, "$(P)POSN:SP")
 {
     field(DTYP, "Soft Channel")
     field(DESC, "Move to the position and lower the arm")
     field(SCAN, "Passive")
-    field(FLNK, "$(P)POSN:SP:_SEND_IF_CHANGED") #forward links to check if move is necessary
     info(INTEREST, "HIGH")
     field(EGU, "")
     field(SIML, "$(P)SIM")
@@ -331,34 +343,37 @@ record(ao, "$(P)POSN:SP")
     field(SDIS, "$(P)DISABLE")
 }
 
-record(calcout, "$(P)POSN:SP:_SEND_IF_CHANGED")
-{
-    field(INPA, "$(P)POSN:SP")
-    field(INPB, "$(P)POSN")
-    field(CALC, "A!=B") # compares and prevents moving to position that it is already in.
-    field(OOPT, "When Non-zero")
-    field(OUT, "$(P)POSN:SP:RAW.PROC")
-}
-
-
 record(ao, "$(P)POSN:SP:RAW")
 {
+    field(DESC, "Actually sends new positions, controlled via SNL")
     field(DTYP, "stream")
-  field(DRVH, "20")
-  field(DRVL, "1")
-  field(OIF, "Full")
-    field(OMSL, "closed_loop")
-    field(DOL, "$(P)POSN:SP")
+    field(DRVH, "20")
+    field(DRVL, "1")
     field(OUT, "@rotsc_$(VERSION).proto moveWithLower($(P)$(CMD_ERR)_NUMBER) $(PORT)")
+}
+
+record(calc, "$(P)CALC_NOT_MOVING")
+{
+    field(DESC, "Has the device stopped moving (potentially erroneously)")
+    field(SCAN, "Passive")
+    field(INPA, "$(P)MOTOR_0_ACTIVE CP")
+    field(INPB, "$(P)MOTOR_1_ACTIVE CP")
+
+    field(CALC, "(!A)&&(!B)")
+    field(ASG, "READONLY")
 }
 
 record(calc, "$(P)CALC_MOVE_FINISHED")
 {
-    field(DESC, "Has the device has finished moving")
+    field(DESC, "Has the device finished moving successfully")
     field(SCAN, "Passive")
-    field(INPA, "$(P)MOTOR_0_ACTIVE CP")
-    field(INPB, "$(P)MOTOR_1_ACTIVE CP")
-    field(CALC, "(!A)&&(!B)")
+    field(INPA, "$(P)CALC_NOT_MOVING CP")
+    field(INPB, "$(P)SAMPLE_ARM_DOWN CP")
+    field(INPC, "$(P)POSN CP")
+    field(INPD, "$(P)POSN:SP CP")
+    field(INPE, "$(P)ERR_NUMBER CP")
+
+    field(CALC, "A&&B&&(C=-1||C=D)&&(E=0)")
     field(ASG, "READONLY")
     info(INTEREST, "MEDIUM")
 }
@@ -393,6 +408,24 @@ record(mbbi, "$(P)STAT")
     info(INTEREST, "MEDIUM")
 }
 
+record(ao, "$(P)SEQ:MAX_MOTION_TIME") {
+    # Max time to wait for motion to stop after it started.
+    field(VAL, "600")
+    field(PINI, "YES")
+}
+
+record(ao, "$(P)SEQ:MAX_MOTION_BEGIN_DELAY") {
+    # Max time between asking for a move to start, and the move starting.
+    field(VAL, "10")
+    field(PINI, "YES")
+}
+
+record(ao, "$(P)SEQ:MAX_RETRY") {
+    # Max number of retries to retrieve a droppped sample
+    field(VAL, "10")
+    field(PINI, "YES")
+}
+
 ### SIMULATION RECORDS ###
 
 record(bo, "$(P)SIM:RESET_0")
@@ -402,6 +435,12 @@ record(bo, "$(P)SIM:RESET_0")
 }
 
 record(bo, "$(P)SIM:RESET_1")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
+record(ao, "$(P)SIM:LAST_POSN:SP")
 {
     field(SCAN, "Passive")
     field(DTYP, "Soft Channel")
