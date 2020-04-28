@@ -14,12 +14,12 @@ DBD += rotsc.dbd
 
 # Create shared library
 
-LIBRARY_IOC = ROTSC
+LIBRARY_IOC = rotsc
 
-ROTSC_LIBS += seq pv
-ROTSC_LIBS += $(EPICS_BASE_IOC_LIBS)
+rotsc_LIBS += seq pv
+rotsc_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-ROTSC_SRCS += rotsc.st
+rotsc_SRCS += rotsc.st
 
 
 #=======================================
