@@ -125,7 +125,7 @@ record(scalcout, "$(P)CALC_CAR_AT_IDX")
 
 record(bo, "$(P)CAROUSEL_AT_IDX")
 {
-    field(DESC, "The carousel has reached the index?")
+    field(DESC, "Carousel reached index")
     field(ONAM, "AT INDEX")
     field(ZNAM, "OFF INDEX")
     info(INTEREST, "MEDIUM")
@@ -142,7 +142,7 @@ record(scalcout, "$(P)CALC_CAR_AT_POS_1")
 
 record(bo, "$(P)CAROUSEL_AT_POS_1")
 {
-    field(DESC, "Is the carousel at position 1")
+    field(DESC, "Carousel at position 1")
     field(ONAM, "AT POSITION 1")
     field(ZNAM, "OFF POSITION 1")
     info(INTEREST, "MEDIUM")
@@ -191,7 +191,7 @@ record(scalcout, "$(P)CALC_MTR_1_ACTIVE")
 
 record(bo, "$(P)MOTOR_1_ACTIVE")
 {
-    field(DESC, "The active/idle state of the arm motor")
+    field(DESC, "State of arm motor")
     field(ONAM, "ACTIVE")
     field(ZNAM, "IDLE")
     info(INTEREST, "MEDIUM")
@@ -208,7 +208,7 @@ record(scalcout, "$(P)CALC_MTR_0_ACTIVE")
 
 record(bo, "$(P)MOTOR_0_ACTIVE")
 {
-    field(DESC, "The active/idle state of rotating motor")
+    field(DESC, "State of rotating motor")
     field(ONAM, "ACTIVE")
     field(ZNAM, "IDLE")
     info(INTEREST, "MEDIUM")
@@ -322,7 +322,8 @@ record(bo, "$(P)RETRIEVE_DROPPED")
 record(ao, "$(P)LAST_POSN:SP")
 {
     field(DTYP, "Soft Channel")
-    field(DESC, "Remember the last position requested to recover from errors")
+	#  to recover from errors
+    field(DESC, "Remember last pos requested")
     field(SCAN, "Passive")
     field(EGU, "")
     field(VAL, "1")
@@ -334,7 +335,7 @@ record(ao, "$(P)LAST_POSN:SP")
 record(ao, "$(P)POSN:SP")
 {
     field(DTYP, "Soft Channel")
-    field(DESC, "Move to the position and lower the arm")
+    field(DESC, "Move to position and lower arm")
     field(SCAN, "Passive")
     info(INTEREST, "HIGH")
     field(EGU, "")
@@ -345,7 +346,8 @@ record(ao, "$(P)POSN:SP")
 
 record(ao, "$(P)POSN:SP:RAW")
 {
-    field(DESC, "Actually sends new positions, controlled via SNL")
+    # controlled via SNL
+    field(DESC, "Actually sends new positions")
     field(DTYP, "stream")
     field(DRVH, "20")
     field(DRVL, "1")
@@ -354,7 +356,7 @@ record(ao, "$(P)POSN:SP:RAW")
 
 record(calc, "$(P)CALC_NOT_MOVING")
 {
-    field(DESC, "Has the device stopped moving (potentially erroneously)")
+    field(DESC, "Has the device stopped moving")
     field(SCAN, "Passive")
     field(INPA, "$(P)MOTOR_0_ACTIVE CP")
     field(INPB, "$(P)MOTOR_1_ACTIVE CP")
@@ -365,7 +367,7 @@ record(calc, "$(P)CALC_NOT_MOVING")
 
 record(calc, "$(P)CALC_MOVE_FINISHED")
 {
-    field(DESC, "Has the device finished moving successfully")
+    field(DESC, "Has device finished moving OK")
     field(SCAN, "Passive")
     field(INPA, "$(P)CALC_NOT_MOVING CP")
     field(INPB, "$(P)SAMPLE_ARM_DOWN CP")
@@ -380,7 +382,7 @@ record(calc, "$(P)CALC_MOVE_FINISHED")
 
 record(calc, "$(P)IS_INITIALISED")
 {
-    field(DESC, "Has the device has been initialised")
+    field(DESC, "Has device has been initialised")
     field(INPA, "$(P)POSN.VAL CP")
     field(CALC, "A>0")
     field(ASG, "READONLY")

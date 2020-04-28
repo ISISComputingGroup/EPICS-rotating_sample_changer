@@ -1,6 +1,6 @@
 record(ao, "$(P)GET_VR:SP")
 {
-	field(DESC, "Set which variable to get from GET_VR") 
+	field(DESC, "Variable to get from GET_VR") 
 	field(FLNK, "$(P)GET_VR_MAG")
 	info(INTEREST, "MEDIUM")
 	field(EGU, "") # Setting a memory location
@@ -33,7 +33,7 @@ record(scalcout, "$(P)CALC_GET_VR")
 
 record(ai, "$(P)GET_VR")
 {
-	field(DESC, "Get the value of the specified variable")
+	field(DESC, "Get value of specified var")
 	info(INTEREST, "MEDIUM")
 	field(EGU, "") # Only known at runtime
 }
@@ -48,7 +48,7 @@ record(scalcout, "$(P)CALC_MTR_1_ENB")
 
 record(bo, "$(P)MTR_1_ENABLED")
 {
-    field(DESC, "Whether motor 1 is enabled")
+    field(DESC, "Is motor 1 is enabled")
 	field(ONAM, "ENABLED")
 	field(ZNAM, "DISABLED")
 	info(INTEREST, "MEDIUM")
@@ -64,7 +64,7 @@ record(scalcout, "$(P)CALC_MTR_0_ENB")
 
 record(bo, "$(P)MTR_0_ENABLED")
 {
-    field(DESC, "Whether motor 0 is enabled")
+    field(DESC, "Is motor 0 is enabled")
 	field(ONAM, "ENABLED")
 	field(ZNAM, "DISABLED")
 	info(INTEREST, "MEDIUM")
@@ -80,7 +80,7 @@ record(scalcout, "$(P)CALC_MTR_1_DIRECTION")
 
 record(bo, "$(P)MOTOR_1_DIRECTION")
 {
-	field(DESC, "The direction motor 1 is set to rotate")
+	field(DESC, "Rotation dir motor 1")
 	field(ONAM, "RAISE")
 	field(ZNAM, "LOWER")
 	info(INTEREST, "MEDIUM")
@@ -128,7 +128,7 @@ record(scalcout, "$(P)CALC_MTR_0_DIRECTION")
 
 record(bo, "$(P)MOTOR_0_DIRECTION")
 {
-	field(DESC, "The direction motor 0 is set to rotate")
+	field(DESC, "Rotation dir motor 0")
 	field(ONAM, "BACKWARD")
 	field(ZNAM, "FORWARD")
 	info(INTEREST, "MEDIUM")
