@@ -393,8 +393,9 @@ record(calcout, "$(P)CALC_STAT")
 {
     field(DESC, "Make text version of status")
     field(INPA, "$(P)IS_INITIALISED CP")
-    field(INPB, "$(P)CALC_MOVE_FINISHED CP")
-    field(CALC, "(!A)?0:B?1:2")
+    field(INPB, "$(P)CALC_NOT_MOVING CP")
+    field(INPC, "$(P)ERR_NUMBER CP")
+    field(CALC, "(C!=0)?3:(!A)?0:B?1:2")
     field(OUT, "$(P)STAT PP")
 }
 
@@ -407,6 +408,9 @@ record(mbbi, "$(P)STAT")
     field(ONST, "Idle")
     field(TWVL, "2")
     field(TWST, "Moving")
+    field(THVL, "3")
+    field(THST, "Error")
+    field(THSV, "MAJOR")
     info(INTEREST, "MEDIUM")
 }
 

@@ -111,47 +111,28 @@ ss rotsc
       errlogSevPrintf(errlogInfo, "%s: Target position (%d) reached.\n", PROGRAM_NAME, setpoint_raw);
       sample_dropped_retries = 0;
     } state idle
-    
-    when(error_number == 7)
-    {
-      errlogSevPrintf(errlogInfo, "%s: Could not reach %d, sample dropped!\n", PROGRAM_NAME, setpoint_raw);
-      errlogSevPrintf(errlogInfo, "%s: Moving back to %d to retrieve sample.\n", PROGRAM_NAME, last_setpoint);
-      PVPUT(setpoint_raw, last_setpoint)
-    } state retrieve_dropped_sample
-    
-    when(delay(max_motion_time))
-    {
-      errlogSevPrintf(errlogMajor, 
-                      "%s: Waited %f seconds but move never completed. Final position = %d, setpoint = %d, motor0_active = %d, motor1_active = %d, sample_arm_down = %d, finished = %d. Will retry move. Last error from device was '%s'.\n", 
-                      PROGRAM_NAME, max_motion_time, actual_position, setpoint_raw, motor0_active, motor1_active, sample_arm_down, move_complete, error);
-      
-      /* Resend setpoint. Hopefully this time it works ok. */
-      PVPUT(setpoint_raw, setpoint);
-    } state wait_for_motion_to_begin
   }
   
   state retrieve_dropped_sample
   {
-    when(not_moving && actual_position == setpoint_raw)
+    when(error_number == 0)
+	{
+	  PVPUTSTR(error, "Attempting to retrieve dropped");
+      PVPUT(error_number, 7);
+	} state retrieve_dropped_sample
+	
+    when(move_complete)
     {
       errlogSevPrintf(errlogInfo, "%s: Retrieving dropped sample.\n", PROGRAM_NAME);
       PVPUT(retrieve_sample, 1);
-    } state raise_sample_arm
+    } state wait_for_retrieved_sample
   }
   
-  state raise_sample_arm
+  state wait_for_retrieved_sample
   {
-    when(not_moving && !sample_arm_up)
+    when(not_moving && !sample_arm_up && (setpoint_raw == actual_position))
     {
-      errlogSevPrintf(errlogInfo, "%s: Assuming sample retrieved, raising arm.\n", PROGRAM_NAME, sample_arm_up);
-      PVPUT(raise_arm, 1);
-    } state wait_for_arm_raised
-  }
-  state wait_for_arm_raised
-  {
-    when(sample_arm_up)
-    {
-      errlogSevPrintf(errlogInfo, "%s: Sample arm raised, retrying move to %d.\n", PROGRAM_NAME, setpoint);
+      errlogSevPrintf(errlogInfo, "%s: Sample retrieved, retrying move to %d.\n", PROGRAM_NAME, setpoint);
       PVPUT(setpoint_raw, setpoint);
       sample_dropped_retries++;
     } state wait_for_motion_to_begin
@@ -159,7 +140,7 @@ ss rotsc
     when(sample_dropped_retries == maximum_drop_retries)
     {
       errlogSevPrintf(errlogInfo, "%s: Sample could not be retrieved after %d retries.\n", PROGRAM_NAME, maximum_drop_retries);
-      PVPUTSTR(error, "Dropped sample could not be retrieved");
+      PVPUTSTR(error, "Dropped sample could not be retrieved");	  
       PVPUT(setpoint, actual_position);
     } state idle
   }
