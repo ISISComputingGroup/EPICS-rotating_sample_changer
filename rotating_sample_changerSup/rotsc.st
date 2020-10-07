@@ -11,7 +11,7 @@ PV(unsigned int, last_setpoint, "{P}LAST_POSN:SP", Monitor);
 PV(unsigned int, setpoint, "{P}POSN:SP", Monitor);
 PV(unsigned int, setpoint_alarm, "{P}POSN:SP.SEVR", Monitor);
 PV(unsigned int, setpoint_raw, "{P}POSN:SP:RAW", Monitor);
-PV(unsigned int, actual_position, "{P}POSN", Monitor);
+PV(int, actual_position, "{P}POSN", Monitor);
 
 PV(unsigned int, initialized, "{P}IS_INITIALISED", Monitor);
 PV(unsigned int, reinitialize, "{P}INIT", NoMon);
@@ -111,6 +111,7 @@ ss rotsc
       errlogSevPrintf(errlogInfo, "%s: Target position (%d) reached.\n", PROGRAM_NAME, setpoint_raw);
       sample_dropped_retries = 0;
     } state idle
+
   }
   
   state retrieve_dropped_sample
