@@ -3,7 +3,7 @@ program rotsc ("P")
 option +r;
 option +d;
 
-#include "seqPVmacros.h"
+#include "ibexSeqPVmacros.h"
 %% #include "stdlib.h"
 %% #include "errlog.h"
 
